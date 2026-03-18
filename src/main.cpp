@@ -15,12 +15,12 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 
-int getSoilQuality(int moisture, float temp, float humidity) {
-  double input [] = {0.0, static_cast<double>(moisture), static_cast<double>(temp), static_cast<double>(humidity)};
-  double output [2]; // placeholder
+double* getSoilQuality(int moisture, float temp, float humidity) {
+  double input[] = {static_cast<double>(moisture), static_cast<double>(temp), static_cast<double>(humidity)};
+  double output[2]; // placeholder
   score(input, output);
 
-  return 85; // Placeholder value
+  return output; // Placeholder value
 }
 
 void setup() {
