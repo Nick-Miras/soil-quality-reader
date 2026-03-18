@@ -1,6 +1,7 @@
 #if defined(ARDUINO)
 #include <Arduino.h>
 #endif
+#include <stdio.h>
 #include <unity.h>
 #include "model.h"
 #include "scaler.h"
@@ -17,35 +18,32 @@ void test_model_with_scaler(void) {
     // Simulated input values based on typical crop parameters
     // Format: [moisture, Temperature, Humidity] or similar 4 features
     // Output: [0.0, 1.0] for class 1, [1.0, 0.0] for class 0, etc.
-    FLOAT_T raw_input[3] = {25.0, 70.0, 6.5}; 
-    FLOAT_T output[3];
-    
-    // Scale the inputs
-    scaler(output, raw_input);
-
-    // Convert to double for the model
-    double scaled_input[3];
-    for (int i = 0; i < 3; i++) {
-        scaled_input[i] = (double)output[i];
-    }
-
+    // double raw_input[4] = {1.0, 42.0, 13.0, 91.0}; // Example input values - class 0
+    // double raw_input[4] = {3.0, 31.0, 24.0, 58.0}; // Example input values - class 0
+    // double raw_input[4] = {2.0, 21.0, 33.0, 64.0}; // Example input values - class 1
+    double raw_input[4] = {1.0, 56.0, 28.0, 71.0}; // Example input values - class 1
     double model_output[2];
-    
+
     // Run the model scoring
-    score(scaled_input, model_output);
+    score(raw_input, model_output);
 
     // Check if outputs are populated and find the predicted class
     double max_val = -1000000.0;
-    int predicted_class = -1;
+    int predicted_class = -1; // error case
     for (int i = 0; i < 2; i++) {
         if (model_output[i] > max_val) {
             max_val = model_output[i];
             predicted_class = i;
         }
     }
+
+    // Log the predicted class
+    char message[32];
+    snprintf(message, sizeof(message), "Predicted class: %d", predicted_class);
+    TEST_MESSAGE(message);
     
-    // The prediction should be bounded between 0 and 2
-    TEST_ASSERT_TRUE(predicted_class >= 0 && predicted_class <= 2);
+    // The prediction should be bounded between 0 and 1.
+    TEST_ASSERT_TRUE(predicted_class >= 0 && predicted_class < 2);
 }
 
 #if defined(ARDUINO)
