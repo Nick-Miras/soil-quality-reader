@@ -2,7 +2,8 @@
 #include "sensors.h"
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_GFX.h>
-
+#include "model.h"
+#include "scaler.h"
 
 // -----------------------------------------
 // OLED Display Configuration
@@ -13,6 +14,14 @@
 #define SCREEN_ADDRESS 0x3C // See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32/128x64
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+
+int getSoilQuality(int moisture, float temp, float humidity) {
+  double input [] = {0.0, static_cast<double>(moisture), static_cast<double>(temp), static_cast<double>(humidity)};
+  double output [2]; // placeholder
+  score(input, output);
+
+  return 85; // Placeholder value
+}
 
 void setup() {
   Serial.begin(9600);
@@ -38,19 +47,23 @@ void setup() {
 }
 
 void loop() {
-  // 4. Update OLED Display
   display.clearDisplay();
 
-  // Title
+  const float temp = getTemperature();
+  const float humidity = getHumidity();
+  const int moisturePercent = getMoistureLevel();
+  const int soilQuality = getSoilQuality(moisturePercent, temp, humidity);
+
+  // Display Soil Type (placeholder, as we don't have actual soil type detection implemented)
   display.setTextSize(1);
   display.setCursor(0, 0);
-  display.print(F("--- SENSOR FUSION ---"));
+  display.print(F("Soil Type: "));
+  display.print(F("Alluvial")); // Placeholder soil type
 
   // Display DS18B20 Temp
   display.setCursor(0, 16);
   display.print(F("Water Temp: "));
 
-  const float temp = getTemperature();
   if(temp != DEVICE_DISCONNECTED_C) {
     display.print(temp, 1);
     display.print(F(" C"));
@@ -59,25 +72,29 @@ void loop() {
   }
 
   // Display Air Humidity
-  const float humidity = getHumidity();
   display.setCursor(0, 32);
   display.print(F("Air Humid:  "));
   display.print(humidity, 1);
   display.print(F(" %"));
 
   // Display Soil Moisture
-  const int moisturePercent = getMoistureLevel();
   display.setCursor(0, 48);
   display.print(F("Soil Moist: "));
   display.print(moisturePercent);
   display.print(F(" %"));
+
+  // Display Soil Quality
+  display.setCursor(0, 56);
+  display.print(F("Quality:    "));
+  display.print(soilQuality);
 
   display.display();
 
   // Print to Serial Monitor for debugging
   Serial.print("Water Temp: "); Serial.print(temp); Serial.print("C | ");
   Serial.print("Humidity: "); Serial.print(humidity); Serial.print("% | ");
-  Serial.print("Moisture: "); Serial.print(moisturePercent); Serial.println("%");
+  Serial.print("Moisture: "); Serial.print(moisturePercent); Serial.print("% | ");
+  Serial.print("Quality: "); Serial.println(soilQuality);
 
   // Wait 2 seconds between readings (DHT sensors are slow and shouldn't be polled faster than this)
   delay(2000);
