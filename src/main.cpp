@@ -15,12 +15,21 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 
-double* getSoilQuality(int moisture, float temp, float humidity) {
-  double input[] = {static_cast<double>(moisture), static_cast<double>(temp), static_cast<double>(humidity)};
-  double output[2]; // placeholder
+int getSoilQuality(int moisture, float temp, float humidity) {
+  double input[4] = {0.0, static_cast<double>(moisture), static_cast<double>(temp), static_cast<double>(humidity)};
+  double output[2]; 
   score(input, output);
 
-  return output; // Placeholder value
+  double max_val = -1000000.0;
+  int predicted_class = -1; // error case
+    for (int i = 0; i < 2; i++) {
+        if (output[i] > max_val) {
+            max_val = output[i];
+            predicted_class = i;
+        }
+    }
+
+  return predicted_class;
 }
 
 void setup() {
@@ -86,7 +95,13 @@ void loop() {
   // Display Soil Quality
   display.setCursor(0, 56);
   display.print(F("Quality:    "));
-  display.print(soilQuality);
+  if (soilQuality == 0) {
+    display.print(F("Poor"));
+  } else if (soilQuality == 1) {
+    display.print(F("Good"));
+  } else {
+    display.print(F("Unknown"));
+  }
 
   display.display();
 
