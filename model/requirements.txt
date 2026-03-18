@@ -1,1 +1,2 @@
 scikinC==0.2.9
+scikit-learn==1.7.1
